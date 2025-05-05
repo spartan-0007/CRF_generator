@@ -1,0 +1,52 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.4' apply false
+	id 'io.spring.dependency-management' version '1.1.4' apply false
+}
+
+// Root project configuration
+group = 'com.iftas.in'
+version = '0.0.1-SNAPSHOT'
+
+allprojects {
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/milestone" }
+	}
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'io.spring.dependency-management'
+
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(17)
+		}
+	}
+
+	sourceCompatibility = '17'
+	targetCompatibility = '17'
+
+	dependencyManagement {
+		imports {
+			mavenBom "org.springframework.boot:spring-boot-dependencies:3.2.4"
+		}
+	}
+
+	tasks.withType(JavaCompile).configureEach {
+		options.encoding = 'UTF-8'
+		options.compilerArgs += ['-parameters']
+	}
+
+	test {
+		useJUnitPlatform()
+	}
+}
+
+// Add a task to run both backend and frontend in development
+tasks.register('runAll') { task ->
+	description = 'Run the entire application (backend and frontend)'
+	dependsOn ':sfms-crf-be:bootRun'
+	// The frontend's dependency is added in its own build.gradle
+}

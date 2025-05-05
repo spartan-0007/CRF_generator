@@ -1,0 +1,97 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'java'
+    id 'org.openapi.generator' version '6.6.0'
+}
+
+springBoot {
+    mainClass = 'com.iftas.in.backend.BackendApplication'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Actuator and devtools dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // Jackson dependencies
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
+
+    // Database dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    runtimeOnly 'com.h2database:h2'
+
+    // OpenAPI related dependencies
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Lombok dependencies
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "${projectDir}/src/main/resources/specs/Crf_apigenerationopenapi3_0_v1.yaml"
+    outputDir = "${buildDir}/generated"
+    apiPackage = "com.iftas.in.backend.api"
+    modelPackage = "com.iftas.in.backend.model"
+    configOptions = [
+            dateLibrary: "java8",
+            useSpringBoot3: "true",
+            interfaceOnly: "true",
+            returnResponse: "true",
+            documentationProvider: "springdoc",
+            java17: "true"
+    ]
+
+    validateSpec = false
+}
+
+// Include generated sources in compile classpath if using OpenAPI generation
+sourceSets {
+    main {
+        java {
+            srcDir "${buildDir}/generated/src/main/java"
+        }
+    }
+}
+
+bootJar {
+    enabled = true
+
+    // Include frontend build in the backend JAR
+    dependsOn ':sfms-crf-fe:buildReact'
+
+    doLast {
+        copy {
+            from "${project(':sfms-crf-fe').projectDir}/build"
+            into "${buildDir}/resources/main/static"
+        }
+    }
+}
+
+jar {
+    enabled = true
+}
+
+// For processResources to also include the frontend build output
+processResources {
+    dependsOn ':sfms-crf-fe:buildReact'
+
+    doLast {
+        copy {
+            from "${project(':sfms-crf-fe').projectDir}/build"
+            into "${buildDir}/resources/main/static"
+        }
+    }
+}

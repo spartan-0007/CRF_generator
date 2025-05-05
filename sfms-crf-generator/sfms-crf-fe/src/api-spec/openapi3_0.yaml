@@ -1,0 +1,175 @@
+openapi: 3.0.0
+info:
+  title: Crf Core API
+  description: API for Change Request form
+  version: 1.0.0
+
+paths:
+  /generate-excel:
+    post:
+      "tags":
+        - "Create-CRF"
+      summary: Generate an Excel file from provided data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CRFRequest'
+              required:
+                - data
+      responses:
+        '200':
+          description: Excel file generated successfully
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /get-data:
+    get:
+      "tags":
+        - "View-CRF"
+      summary: Retrieve data from the database
+      parameters:
+        - in: query
+          name: filter
+          schema:
+            type: string
+          description: Optional filter for the data
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of records to retrieve
+      responses:
+        '200':
+          description: A list of retrieved data records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CRFRequest:
+      type: object
+      properties:
+        crf:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Required
+            designation:
+              type: string
+              description: Required
+            company:
+              type: string
+              description: Required
+            location:
+              type: string
+              description: Required
+            contactNumber:
+              type: string
+              description: Required
+            email:
+              type: string
+              description: Required
+            priority:
+              type: string
+              description: Required
+            crfDept:
+              type: string
+              description: Required
+            protocol:
+              type: string
+              description: Required
+            sourceIps:
+              type: string
+              description: Required
+            sourceServerDetails:
+              type: string
+              description: Required
+            destinationIps:
+              type: string
+              description: Required
+            destinationServerDetails:
+              type: string
+              description: Required
+            port:
+              type: string
+              description: Required
+            portDescription:
+              type: string
+              description: Optional
+            openDate:
+              type: string
+              format: date
+              description: Required (YYYY-MM-DD)
+            closeDate:
+              type: string
+              format: date
+              description: Required (YYYY-MM-DD)
+            reasonForChange:
+              type: string
+              description: Required
+          required:
+            - name
+            - designation
+            - company
+            - location
+            - contactNumber
+            - email
+            - priority
+            - crfDept
+            - protocol
+            - sourceIps
+            - sourceServerDetails
+            - destinationIps
+            - destinationServerDetails
+            - port
+            - openDate
+            - closeDate
+            - reasonForChange
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: string
+        timestamp:
+          type: string
+          format: dateTime

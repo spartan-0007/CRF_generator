@@ -1,0 +1,4 @@
+rootProject.name = 'sfms-crf-generator'
+
+include 'sfms-crf-be'
+include 'sfms-crf-fe'

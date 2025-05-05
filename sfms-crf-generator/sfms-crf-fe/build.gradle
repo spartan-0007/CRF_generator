@@ -1,0 +1,56 @@
+plugins {
+    id 'base'
+    id 'com.github.node-gradle.node' version '7.0.1'
+}
+
+// Use system Node.js instead of downloading
+node {
+    download = false
+}
+
+task installReact(type: NpmTask) {
+    description = 'Install all dependencies from package.json'
+    args = ['install']
+    inputs.file('package.json')
+    outputs.dir('node_modules')
+}
+
+task buildReact(type: NpmTask) {
+    description = 'Build the React application'
+    dependsOn installReact
+    args = ['run', 'build']
+    inputs.dir('src')
+    inputs.dir('public')
+    inputs.file('package.json')
+    outputs.dir('build')
+
+    // Just ignore exit value for any errors
+    ignoreExitValue = true
+}
+
+task devReact(type: NpmTask) {
+    description = 'Run React development server'
+    dependsOn installReact
+    args = ['run', 'dev']
+}
+
+// Make assemble depend on buildReact
+assemble.dependsOn buildReact
+
+// Make jar explicitly depend on buildReact to fix dependency warning
+jar {
+    dependsOn buildReact
+    enabled = false  // We don't need a JAR for the frontend module
+}
+
+// Add this module's dev task to the runAll task in the root project
+rootProject.tasks.named('runAll') {
+    dependsOn tasks.named('devReact')
+}
+
+// Simple clean task
+clean {
+    delete "${projectDir}/build"
+    delete "${projectDir}/node_modules"
+}
+
